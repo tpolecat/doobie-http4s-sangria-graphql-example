@@ -9,5 +9,5 @@ final case class City(
   name:         String,
   countryId:    String,
   district:     String,
-  population:   Int,
+  population:   Long,
 )

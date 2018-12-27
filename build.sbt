@@ -105,5 +105,6 @@ lazy val core = project
       "org.http4s"           %% "http4s-circe"        % http4sVersion,
       "io.circe"             %% "circe-optics"        % circeVersion,
       "org.slf4j"            %  "slf4j-simple"        % slf4jVersion
-    )
+    ),
+    
   )
