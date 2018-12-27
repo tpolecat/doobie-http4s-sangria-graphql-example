@@ -107,9 +107,7 @@ object GraphQL {
 
           // Parse `query` and execute.
           def query(query: String, operationName: Option[String], variables: JsonObject): F[Either[Json, Json]] = {
-           val q =  QueryParser.parse(query)
-            println(q)
-           q match {
+           QueryParser.parse(query)  match {
               case Success(ast) => exec(schema, userContext, ast, operationName, variables)(blockingExecutionContext)
               case Failure(e@SyntaxError(_, _, pe)) => fail(formatSyntaxError(e))
               case Failure(e) => fail(formatThrowable(e))
