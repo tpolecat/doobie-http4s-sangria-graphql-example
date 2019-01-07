@@ -11,7 +11,7 @@ lazy val http4sVersion        = "0.20.0-M4"
 lazy val slf4jVersion         = "1.7.25"
 
 lazy val scalacSettings = Seq(
-  scalacOptions ++= (
+  scalacOptions ++= 
     Seq(
       "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
       "-encoding", "utf-8",                // Specify character encoding used by source files.
@@ -61,7 +61,7 @@ lazy val scalacSettings = Seq(
       "-Ywarn-macros:before", // via som
       "-Yrangepos" // for longer squiggles
     )
-  ),
+  ,
   scalacOptions in (Compile, console) --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports", "-Yno-imports"),
 )
 

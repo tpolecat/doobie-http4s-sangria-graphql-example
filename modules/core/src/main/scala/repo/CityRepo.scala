@@ -22,8 +22,8 @@ object CityRepo {
 
       val select: Fragment =
         fr"""
-          select id, name, countrycode, district, population
-          from city
+          select id, name, country_id, district, population
+          from cities
         """
 
       def fetchById(id: Int): F[Option[City]] =

@@ -106,12 +106,13 @@ object GraphQL {
           }
 
           // Parse `query` and execute.
-          def query(query: String, operationName: Option[String], variables: JsonObject): F[Either[Json, Json]] =
-            QueryParser.parse(query) match {
+          def query(query: String, operationName: Option[String], variables: JsonObject): F[Either[Json, Json]] = {
+           QueryParser.parse(query)  match {
               case Success(ast)                       => exec(schema, userContext, ast, operationName, variables)(blockingExecutionContext)
               case Failure(e @ SyntaxError(_, _, pe)) => fail(formatSyntaxError(e))
               case Failure(e)                         => fail(formatThrowable(e))
             }
+          }
 
           // Lift a `Json` into the error side of our effect.
           def fail(j: Json): F[Either[Json, Json]] =

@@ -12,20 +12,22 @@ import schema._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl._
+import org.http4s.headers.Location
 import org.http4s.implicits._
 import org.http4s.server.Server
 import org.http4s.server.blaze._
+
 import scala.concurrent.ExecutionContext
 
 object Main extends IOApp {
 
-  // Construct a transctor for connecting to the database.
+  // Construct a transactor for connecting to the database.
   def transactor[F[_]: Async: ContextShift] =
     Transactor.fromDriverManager[F](
       "org.postgresql.Driver",
       "jdbc:postgresql:world",
-      "postgres",
-      ""
+      "user",
+      "password"
     )
 
   // Construct a GraphQL implementation based on our Sangria definitions.
@@ -44,19 +46,24 @@ object Main extends IOApp {
     graphQL:         GraphQL[F],
     blockingContext: ExecutionContext
   ): HttpRoutes[F] = {
+    
     object dsl extends Http4sDsl[F]; import dsl._
+    
     HttpRoutes.of[F] {
 
-      case GET -> Root =>
+      case GET -> Root / "playground.html" =>
         StaticFile
-          .fromResource[F]("/assets/graphiql.html", blockingContext)
+          .fromResource[F]("/assets/playground.html", blockingContext)
           .getOrElseF(NotFound())
-
+        
       case req @ POST -> Root / "graphql" ⇒
         req.as[Json].flatMap(graphQL.query).flatMap {
           case Right(json) => Ok(json)
           case Left(json)  => BadRequest(json)
         }
+
+      case _ =>
+        PermanentRedirect(Location(Uri.uri("/playground.html")))
 
     }
   }

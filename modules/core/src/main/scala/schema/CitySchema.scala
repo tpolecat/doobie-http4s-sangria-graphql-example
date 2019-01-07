@@ -16,10 +16,11 @@ object CitySchema {
     ObjectType(
       name = "City",
       fields[Unit, City](
-        Field("id",         IntType,    resolve = _.value.id),
-        Field("name",       StringType, resolve = _.value.name),
-        Field("district",   StringType, resolve = _.value.district),
-        Field("population", IntType,    resolve = _.value.population)
+        Field("id",         IntType,      resolve = _.value.id),
+        Field("name",       StringType,   resolve = _.value.name),
+        Field("country",    StringType,   resolve = _.value.countryId),
+        Field("district",   StringType,   resolve = _.value.district),
+        Field("population", LongType,     resolve = _.value.population)
       )
     )
 
