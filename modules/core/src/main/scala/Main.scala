@@ -2,11 +2,14 @@
 // This software is licensed under the MIT License (MIT).
 // For more information see LICENSE or https://opensource.org/licenses/MIT
 
+package demo
+
 import cats.effect._
 import cats.implicits._
+import demo.sangria.SangriaGraphQL
 import doobie._
 import doobie.util.ExecutionContexts
-import io.circe._
+import io.circe.Json
 import repo._
 import schema._
 import org.http4s._
@@ -35,7 +38,7 @@ object Main extends IOApp {
     transactor:      Transactor[F],
     blockingContext: ExecutionContext
   ): GraphQL[F] =
-    GraphQL.fromSangria[F](
+    SangriaGraphQL[F](
       CitySchema.schema,
       CityRepo.fromTransactor(transactor).pure[F],
       blockingContext
@@ -46,16 +49,16 @@ object Main extends IOApp {
     graphQL:         GraphQL[F],
     blockingContext: ExecutionContext
   ): HttpRoutes[F] = {
-    
+
     object dsl extends Http4sDsl[F]; import dsl._
-    
+
     HttpRoutes.of[F] {
 
       case GET -> Root / "playground.html" =>
         StaticFile
           .fromResource[F]("/assets/playground.html", blockingContext)
           .getOrElseF(NotFound())
-        
+
       case req @ POST -> Root / "graphql" ⇒
         req.as[Json].flatMap(graphQL.query).flatMap {
           case Right(json) => Ok(json)

@@ -2,12 +2,12 @@
 // This software is licensed under the MIT License (MIT).
 // For more information see LICENSE or https://opensource.org/licenses/MIT
 
-package schema
+package demo.schema
 
 import cats.effect._
 import cats.effect.implicits._
-import model._
-import repo._
+import demo.model._
+import demo.repo._
 import sangria.schema._
 
 object CitySchema {

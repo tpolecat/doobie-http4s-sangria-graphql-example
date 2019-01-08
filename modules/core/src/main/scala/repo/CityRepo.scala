@@ -2,13 +2,13 @@
 // This software is licensed under the MIT License (MIT).
 // For more information see LICENSE or https://opensource.org/licenses/MIT
 
-package repo
+package demo.repo
 
 import cats._
 import doobie._
 import doobie.implicits._
 import fs2._
-import model._
+import demo.model._
 
 trait CityRepo[F[_]] {
   def fetchById(id: Int): F[Option[City]]
