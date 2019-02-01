@@ -4,11 +4,7 @@
 
 package demo
 
-import cats._
-import cats.effect._
-import cats.implicits._
 import io.circe.{ Json, JsonObject }
-import io.circe.optics.JsonPath.root
 
 /** An algebra of operations in F that evaluate GraphQL requests. */
 trait GraphQL[F[_]] {

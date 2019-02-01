@@ -5,18 +5,19 @@
 package demo.model
 
 final case class Country(
-  id:             String,
+  code:            String,
   name:            String,
   continent:       String,
   region:          String,
   surfacearea:     Float,
-  indepyear:       Short,
+  indepyear:       Option[Short],
   population:      Int,
-  lifeexpectancy:  Float,
-  gnp:             BigDecimal,
-  gnpold:          BigDecimal,
+  lifeexpectancy:  Option[Float],
+  gnp:             Option[BigDecimal],
+  gnpold:          Option[BigDecimal],
   localname:       String,
   governmentform:  String,
-  headofstate:     String,
-  capitalId:       Int,
+  headofstate:     Option[String],
+  capitalId:       Option[Int],
+  code2:           String
 )

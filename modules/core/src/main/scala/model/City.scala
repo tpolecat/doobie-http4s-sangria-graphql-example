@@ -7,7 +7,7 @@ package demo.model
 final case class City(
   id:           Int,
   name:         String,
-  countryId:    String,
+  countryCode:  String,
   district:     String,
-  population:   Long,
+  population:   Int,
 )

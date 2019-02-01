@@ -9,9 +9,11 @@ import cats.implicits._
 import demo.sangria.SangriaGraphQL
 import doobie._
 import doobie.util.ExecutionContexts
+import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.circe.Json
 import repo._
-import schema._
+import sangria._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl._
@@ -34,13 +36,13 @@ object Main extends IOApp {
     )
 
   // Construct a GraphQL implementation based on our Sangria definitions.
-  def graphQL[F[_]: Effect: ContextShift](
+  def graphQL[F[_]: Effect: ContextShift: Logger](
     transactor:      Transactor[F],
     blockingContext: ExecutionContext
   ): GraphQL[F] =
     SangriaGraphQL[F](
-      CitySchema.schema,
-      CityRepo.fromTransactor(transactor).pure[F],
+      QueryType.schema[F],
+      MasterRepo.fromTransactor(transactor).pure[F],
       blockingContext
     )
 
@@ -81,7 +83,9 @@ object Main extends IOApp {
       .resource
 
   // Resource that constructs our final server.
-  def resource[F[_]: ConcurrentEffect: ContextShift: Timer]: Resource[F, Server[F]] =
+  def resource[F[_]: ConcurrentEffect: ContextShift: Timer](
+    implicit L: Logger[F]
+  ): Resource[F, Server[F]] =
     for {
       bec <- ExecutionContexts.cachedThreadPool[F]
       xa   = transactor[F]
@@ -91,8 +95,10 @@ object Main extends IOApp {
     } yield svr
 
   // Our entry point starts the server and blocks forever.
-  def run(args: List[String]): IO[ExitCode] =
+  def run(args: List[String]): IO[ExitCode] = {
+    implicit val unsafeLogger = Slf4jLogger.unsafeCreate[IO]
     resource[IO].use(_ => IO.never.as(ExitCode.Success))
+  }
 
 }
 
