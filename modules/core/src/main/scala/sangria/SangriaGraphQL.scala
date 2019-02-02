@@ -21,6 +21,7 @@ import io.circe.optics.JsonPath.root
 import scala.concurrent.ExecutionContext
 import scala.util.{ Success, Failure }
 
+/** A GraphQL implementation based on Sangria. */
 object SangriaGraphQL {
 
   // Some circe lenses

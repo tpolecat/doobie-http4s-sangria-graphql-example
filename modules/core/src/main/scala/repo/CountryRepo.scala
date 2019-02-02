@@ -9,14 +9,13 @@ import cats.data._
 import cats.implicits._
 import doobie._
 import doobie.implicits._
-import fs2.Stream
 import demo.model._
 import io.chrisdavenport.log4cats.Logger
 
 trait CountryRepo[F[_]] {
   def fetchByCode(code: String): F[Option[Country]]
-  def fetchAll: Stream[F, Country]
-  def fetchByCodes(codes: List[String]): Stream[F, Country]
+  def fetchAll: F[List[Country]]
+  def fetchByCodes(codes: List[String]): F[List[Country]]
 }
 
 object CountryRepo {
@@ -36,17 +35,17 @@ object CountryRepo {
         Logger[F].info(s"CountryRepo.fetchByCode($code)") *>
         (select ++ sql"where code = $code").query[Country].option.transact(xa)
 
-      def fetchByCodes(codes: List[String]): Stream[F, Country] =
-        Stream.eval_(Logger[F].info(s"CountryRepo.fetchByCodes(${codes.length} codes)")) ++ {
-          NonEmptyList.fromList(codes) match {
-            case Some(nel) => (select ++ fr"where" ++ Fragments.in(fr"code", nel)).query[Country].stream.transact(xa)
-            case None      => Stream.empty[F]
-          }
+      def fetchByCodes(codes: List[String]): F[List[Country]] =
+        NonEmptyList.fromList(codes) match {
+          case None      => List.empty[Country].pure[F]
+          case Some(nel) =>
+            Logger[F].info(s"CountryRepo.fetchByCodes(${codes.length} codes)") *>
+            (select ++ fr"where" ++ Fragments.in(fr"code", nel)).query[Country].to[List].transact(xa)
         }
 
-      def fetchAll: Stream[F, Country] =
-        Stream.eval_(Logger[F].info(s"CountryRepo.fetchAll")) ++
-        select.query[Country].stream.transact(xa)
+      def fetchAll: F[List[Country]] =
+        Logger[F].info(s"CountryRepo.fetchAll") *>
+        select.query[Country].to[List].transact(xa)
 
     }
 

@@ -2,11 +2,9 @@
 // This software is licensed under the MIT License (MIT).
 // For more information see LICENSE or https://opensource.org/licenses/MIT
 
-package demo.sangria
+package demo.schema
 
 import cats.effect.Effect
-import cats.effect.implicits._
-import cats.implicits._
 import demo.model._
 import demo.repo._
 import sangria.schema._

@@ -5,14 +5,16 @@
 package demo.repo
 
 import cats._
+import cats.data._
+import cats.implicits._
 import doobie._
 import doobie.implicits._
-import fs2.Stream
 import demo.model._
 import io.chrisdavenport.log4cats.Logger
 
 trait LanguageRepo[F[_]] {
-  def fetchByCountryCode(code: String): Stream[F, Language]
+  def fetchByCountryCode(code: String): F[List[Language]]
+  def fetchByCountryCodes(codes: List[String]): F[Map[String, List[Language]]]
 }
 
 object LanguageRepo {
@@ -26,9 +28,26 @@ object LanguageRepo {
           FROM   countrylanguage
         """
 
-      def fetchByCountryCode(code: String): Stream[F, Language] =
-        Stream.eval_(Logger[F].info(s"LanguageRepo.fetchByCountryCode($code)")) ++
-        (select ++ sql"where countrycode = $code").query[Language].stream.transact(xa)
+      def fetchByCountryCode(code: String): F[List[Language]] =
+        Logger[F].info(s"LanguageRepo.fetchByCountryCode($code)") *>
+        (select ++ sql"where countrycode = $code").query[Language].to[List].transact(xa)
+
+      def fetchByCountryCodes(codes: List[String]): F[Map[String, List[Language]]] =
+        NonEmptyList.fromList(codes) match {
+          case None      => Map.empty[String, List[Language]].pure[F]
+          case Some(nel) =>
+            Logger[F].info(s"LanguageRepo.fetchByCountryCodes(${codes.length} codes)") *>
+            (select ++ fr"where" ++ Fragments.in(fr"countrycode", nel))
+              .query[Language]
+              .to[List]
+              .map { ls =>
+                // Make sure we include empty lists for countries with no languages
+                codes.foldRight(ls.groupBy(_.countryCode)) { (c, m) =>
+                  Map(c -> List.empty[Language]) |+| m
+                }
+              }
+              .transact(xa)
+        }
 
     }
 

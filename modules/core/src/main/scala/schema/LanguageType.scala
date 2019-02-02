@@ -2,14 +2,19 @@
 // This software is licensed under the MIT License (MIT).
 // For more information see LICENSE or https://opensource.org/licenses/MIT
 
-package demo.sangria
+package demo.schema
 
 import cats.effect.Effect
 import demo.model._
 import demo.repo._
+import sangria.execution.deferred.Deferred
 import sangria.schema._
 
 object LanguageType {
+
+  object Deferred {
+    case class ByCountryCode(code: String) extends Deferred[List[Language]]
+  }
 
   def apply[F[_]: Effect]: ObjectType[MasterRepo[F], Language] =
     ObjectType(

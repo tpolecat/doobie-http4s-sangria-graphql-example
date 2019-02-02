@@ -7,6 +7,7 @@ package demo
 import cats.effect._
 import cats.implicits._
 import demo.sangria.SangriaGraphQL
+import demo.schema._
 import doobie._
 import doobie.hikari._
 import doobie.util.ExecutionContexts
@@ -104,7 +105,7 @@ object Main extends IOApp {
 
   // Our entry point starts the server and blocks forever.
   def run(args: List[String]): IO[ExitCode] = {
-    implicit val unsafeLogger = Slf4jLogger.unsafeCreate[IO]
+    implicit val log = Slf4jLogger.unsafeCreate[IO]
     resource[IO].use(_ => IO.never.as(ExitCode.Success))
   }
 

@@ -2,7 +2,7 @@
 // This software is licensed under the MIT License (MIT).
 // For more information see LICENSE or https://opensource.org/licenses/MIT
 
-package demo.sangria
+package demo.schema
 
 import cats.effect._
 import cats.effect.implicits._
@@ -42,7 +42,7 @@ object QueryType {
           name        = "cities",
           fieldType   = ListType(CityType[F]),
           description = Some("Returns all cities."),
-          resolve     = c => c.ctx.city.fetchAll.compile.to[List].toIO.unsafeToFuture
+          resolve     = c => c.ctx.city.fetchAll.toIO.unsafeToFuture
         ),
 
         Field(
@@ -57,7 +57,7 @@ object QueryType {
           name        = "countries",
           fieldType   = ListType(CountryType[F]),
           description = Some("Returns all countries."),
-          resolve     = c => c.ctx.country.fetchAll.compile.to[List].toIO.unsafeToFuture
+          resolve     = c => c.ctx.country.fetchAll.toIO.unsafeToFuture
         ),
 
       )

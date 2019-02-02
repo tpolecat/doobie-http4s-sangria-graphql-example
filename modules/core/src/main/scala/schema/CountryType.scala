@@ -2,7 +2,7 @@
 // This software is licensed under the MIT License (MIT).
 // For more information see LICENSE or https://opensource.org/licenses/MIT
 
-package demo.sangria
+package demo.schema
 
 import cats.effect._
 import cats.effect.implicits._
@@ -109,13 +109,13 @@ object CountryType {
         Field(
           name           = "cities",
           fieldType      = ListType(CityType[F]),
-          resolve        = e => e.ctx.city.fetchByCountryCode(e.value.code).compile.to[List].toIO.unsafeToFuture
+          resolve        = e => e.ctx.city.fetchByCountryCode(e.value.code).toIO.unsafeToFuture
         ),
 
         Field(
           name           = "languages",
           fieldType      = ListType(LanguageType[F]),
-          resolve        = e => e.ctx.language.fetchByCountryCode(e.value.code).compile.to[List].toIO.unsafeToFuture
+          resolve        = e => LanguageType.Deferred.ByCountryCode(e.value.code)
         )
 
       )
