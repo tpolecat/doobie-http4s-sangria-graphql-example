@@ -7,6 +7,7 @@ package sangria
 
 import _root_.sangria.ast._
 import _root_.sangria.execution._
+import _root_.sangria.execution.deferred._
 import _root_.sangria.execution.WithViolations
 import _root_.sangria.marshalling.circe._
 import _root_.sangria.parser.{ QueryParser, SyntaxError }
@@ -62,7 +63,12 @@ object SangriaGraphQL {
   final class Partial[F[_]] {
 
     // The rest of the constructor
-    def apply[A](schema: Schema[A, Unit], userContext: F[A], blockingExecutionContext: ExecutionContext)(
+    def apply[A](
+      schema: Schema[A, Unit],
+      deferredResolver: DeferredResolver[A],
+      userContext: F[A],
+      blockingExecutionContext: ExecutionContext
+    )(
       implicit F: MonadError[F, Throwable],
                L: LiftIO[F]
     ): GraphQL[F] =
@@ -102,7 +108,11 @@ object SangriaGraphQL {
           userContext.flatMap { ctx =>
             IO.fromFuture {
               IO {
-                Executor.execute(schema, query, ctx,
+                Executor.execute(
+                  schema           = schema,
+                  deferredResolver = deferredResolver,
+                  queryAst         = query,
+                  userContext      = ctx,
                   variables        = Json.fromJsonObject(variables),
                   operationName    = operationName,
                   exceptionHandler = ExceptionHandler {

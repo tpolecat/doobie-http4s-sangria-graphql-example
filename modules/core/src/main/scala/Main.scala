@@ -8,6 +8,7 @@ import cats.effect._
 import cats.implicits._
 import demo.sangria.SangriaGraphQL
 import doobie._
+import doobie.hikari._
 import doobie.util.ExecutionContexts
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
@@ -27,13 +28,19 @@ import scala.concurrent.ExecutionContext
 object Main extends IOApp {
 
   // Construct a transactor for connecting to the database.
-  def transactor[F[_]: Async: ContextShift] =
-    Transactor.fromDriverManager[F](
-      "org.postgresql.Driver",
-      "jdbc:postgresql:world",
-      "user",
-      "password"
-    )
+  def transactor[F[_]: Async: ContextShift](
+    bec: ExecutionContext
+  ): Resource[F, HikariTransactor[F]] =
+    ExecutionContexts.fixedThreadPool[F](10).flatMap { ce =>
+      HikariTransactor.newHikariTransactor(
+        "org.postgresql.Driver",
+        "jdbc:postgresql:world",
+        "user",
+        "password",
+        ce,
+        bec
+      )
+    }
 
   // Construct a GraphQL implementation based on our Sangria definitions.
   def graphQL[F[_]: Effect: ContextShift: Logger](
@@ -42,6 +49,7 @@ object Main extends IOApp {
   ): GraphQL[F] =
     SangriaGraphQL[F](
       QueryType.schema[F],
+      WorldDeferredResolver[F],
       MasterRepo.fromTransactor(transactor).pure[F],
       blockingContext
     )
@@ -88,7 +96,7 @@ object Main extends IOApp {
   ): Resource[F, Server[F]] =
     for {
       bec <- ExecutionContexts.cachedThreadPool[F]
-      xa   = transactor[F]
+      xa  <- transactor[F](bec)
       gql  = graphQL[F](xa, bec)
       rts  = routes(gql, bec)
       svr <- server[F](rts)

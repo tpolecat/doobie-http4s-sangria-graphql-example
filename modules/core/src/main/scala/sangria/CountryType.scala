@@ -8,9 +8,14 @@ import cats.effect._
 import cats.effect.implicits._
 import demo.model._
 import demo.repo._
+import sangria.execution.deferred.Deferred
 import sangria.schema._
 
 object CountryType {
+
+  object Deferred {
+    final case class ByCode(code: String) extends Deferred[Country]
+  }
 
   def apply[F[_]: Effect]: ObjectType[MasterRepo[F], Country] =
     ObjectType(

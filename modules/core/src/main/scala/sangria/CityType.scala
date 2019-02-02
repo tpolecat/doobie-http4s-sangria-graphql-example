@@ -28,8 +28,7 @@ object CityType {
           name        = "country",
           fieldType   = CountryType[F],
           description = Some("Country in which this city resides."),
-          resolve     = e =>
-            e.ctx.country.fetchByCode(e.value.countryCode).map(_.get).toIO.unsafeToFuture
+          resolve     = e => CountryType.Deferred.ByCode(e.value.countryCode)
         ),
 
         Field(

@@ -101,6 +101,7 @@ lazy val core = project
       "org.sangria-graphql"  %% "sangria-circe"       % sangriaCirceVersion,
       "org.tpolecat"         %% "doobie-core"         % doobieVersion,
       "org.tpolecat"         %% "doobie-postgres"     % doobieVersion,
+      "org.tpolecat"         %% "doobie-hikari"       % doobieVersion,
       "org.http4s"           %% "http4s-dsl"          % http4sVersion,
       "org.http4s"           %% "http4s-blaze-server" % http4sVersion,
       "org.http4s"           %% "http4s-circe"        % http4sVersion,
