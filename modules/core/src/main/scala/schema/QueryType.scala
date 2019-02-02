@@ -25,10 +25,10 @@ object QueryType {
       description  = "Unique code of a country."
     )
 
-  def apply[F[_]: Effect] =
+  def apply[F[_]: Effect]: ObjectType[MasterRepo[F], Unit] =
     ObjectType(
       name  = "Query",
-      fields = fields[MasterRepo[F], Unit](
+      fields = fields(
 
         Field(
           name        = "city",

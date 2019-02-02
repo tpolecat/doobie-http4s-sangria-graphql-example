@@ -19,7 +19,7 @@ object LanguageType {
   def apply[F[_]: Effect]: ObjectType[MasterRepo[F], Language] =
     ObjectType(
       name     = "Language",
-      fieldsFn = () => fields[MasterRepo[F], Language](
+      fieldsFn = () => fields(
 
         Field(
           name      = "language",

@@ -20,7 +20,7 @@ object CountryType {
   def apply[F[_]: Effect]: ObjectType[MasterRepo[F], Country] =
     ObjectType(
       name     = "Country",
-      fieldsFn = () => fields[MasterRepo[F], Country](
+      fieldsFn = () => fields(
 
         Field(
           name           = "name",

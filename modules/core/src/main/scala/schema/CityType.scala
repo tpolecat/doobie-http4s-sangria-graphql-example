@@ -14,7 +14,7 @@ object CityType {
   def apply[F[_]: Effect]: ObjectType[MasterRepo[F], City] =
     ObjectType(
       name     = "City",
-      fieldsFn = () => fields[MasterRepo[F], City](
+      fieldsFn = () => fields(
 
         Field(
           name        = "name",
