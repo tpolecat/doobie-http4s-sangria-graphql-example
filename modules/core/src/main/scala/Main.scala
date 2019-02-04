@@ -13,17 +13,15 @@ import doobie.hikari._
 import doobie.util.ExecutionContexts
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import io.circe.Json
 import repo._
 import sangria._
+import _root_.sangria.schema._
 import org.http4s._
-import org.http4s.circe._
 import org.http4s.dsl._
 import org.http4s.headers.Location
 import org.http4s.implicits._
 import org.http4s.server.Server
 import org.http4s.server.blaze._
-
 import scala.concurrent.ExecutionContext
 
 object Main extends IOApp {
@@ -49,32 +47,26 @@ object Main extends IOApp {
     blockingContext: ExecutionContext
   ): GraphQL[F] =
     SangriaGraphQL[F](
-      QueryType.schema[F],
+      Schema(
+        query    = QueryType[F],
+        mutation = Some(MutationType[F])
+      ),
       WorldDeferredResolver[F],
       MasterRepo.fromTransactor(transactor).pure[F],
       blockingContext
     )
 
-  // Construct our routes, delegating real work to `graphQL`.
-  def routes[F[_]: Sync: ContextShift](
-    graphQL:         GraphQL[F],
+  // Playground or else redirect to playground
+  def playgroundOrElse[F[_]: Sync: ContextShift](
     blockingContext: ExecutionContext
   ): HttpRoutes[F] = {
-
     object dsl extends Http4sDsl[F]; import dsl._
-
     HttpRoutes.of[F] {
 
       case GET -> Root / "playground.html" =>
         StaticFile
           .fromResource[F]("/assets/playground.html", blockingContext)
           .getOrElseF(NotFound())
-
-      case req @ POST -> Root / "graphql" ⇒
-        req.as[Json].flatMap(graphQL.query).flatMap {
-          case Right(json) => Ok(json)
-          case Left(json)  => BadRequest(json)
-        }
 
       case _ =>
         PermanentRedirect(Location(Uri.uri("/playground.html")))
@@ -99,7 +91,7 @@ object Main extends IOApp {
       bec <- ExecutionContexts.cachedThreadPool[F]
       xa  <- transactor[F](bec)
       gql  = graphQL[F](xa, bec)
-      rts  = routes(gql, bec)
+      rts  = GraphQLRoutes[F](gql) <+> playgroundOrElse(bec)
       svr <- server[F](rts)
     } yield svr
 

@@ -11,11 +11,12 @@ import sangria.schema._
 
 object QueryType {
 
-  val Id: Argument[Int] =
+  val NamePattern: Argument[String] =
     Argument(
-      name         = "id",
-      argumentType = IntType,
-      description  = "Unique id of a city."
+      name         = "namePattern",
+      argumentType = OptionInputType(StringType),
+      description  = "SQL-style pattern for city name, like \"San %\".",
+      defaultValue = "%"
     )
 
   val Code: Argument[String] =
@@ -31,18 +32,11 @@ object QueryType {
       fields = fields(
 
         Field(
-          name        = "city",
-          fieldType   = OptionType(CityType[F]),
-          description = Some("Returns the City with the given id, if any."),
-          arguments   = List(Id),
-          resolve     = c => c.ctx.city.fetchById(c.arg(Id)).toIO.unsafeToFuture
-        ),
-
-        Field(
           name        = "cities",
           fieldType   = ListType(CityType[F]),
-          description = Some("Returns all cities."),
-          resolve     = c => c.ctx.city.fetchAll.toIO.unsafeToFuture
+          description = Some("Returns cities with the given name pattern, if any."),
+          arguments   = List(NamePattern),
+          resolve     = c => c.ctx.city.fetchAll(c.argOpt(NamePattern)).toIO.unsafeToFuture
         ),
 
         Field(

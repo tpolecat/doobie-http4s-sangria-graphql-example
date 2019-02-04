@@ -12,8 +12,7 @@ import demo.model._
 import io.chrisdavenport.log4cats.Logger
 
 trait CityRepo[F[_]] {
-  def fetchById(id: Int): F[Option[City]]
-  def fetchAll: F[List[City]]
+  def fetchAll(pat: Option[String]): F[List[City]]
   def fetchByCountryCode(code: String): F[List[City]]
 }
 
@@ -28,17 +27,13 @@ object CityRepo {
           FROM   city
         """
 
-      def fetchById(id: Int): F[Option[City]] =
-        Logger[F].info(s"CityRepo.fetchById($id)") *>
-        (select ++ sql"where id = $id").query[City].option.transact(xa)
-
-      def fetchAll: F[List[City]] =
-        Logger[F].info(s"CityRepo.fetchAll") *>
-        select.query[City].to[List].transact(xa)
+      def fetchAll(pat: Option[String]): F[List[City]] =
+        Logger[F].info(s"CityRepo.fetchByNamePattern($pat)") *>
+        (select ++ pat.foldMap(p => sql"WHERE name ILIKE $p")).query[City].to[List].transact(xa)
 
       def fetchByCountryCode(code: String): F[List[City]] =
         Logger[F].info(s"CityRepo.fetchByCountryCode($code)") *>
-        (select ++ sql"where countrycode = $code").query[City].to[List].transact(xa)
+        (select ++ sql"WHERE countrycode = $code").query[City].to[List].transact(xa)
 
     }
 

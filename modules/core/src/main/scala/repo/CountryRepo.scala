@@ -16,6 +16,7 @@ trait CountryRepo[F[_]] {
   def fetchByCode(code: String): F[Option[Country]]
   def fetchAll: F[List[Country]]
   def fetchByCodes(codes: List[String]): F[List[Country]]
+  def update(code: String, newName: String): F[Option[Country]]
 }
 
 object CountryRepo {
@@ -46,6 +47,12 @@ object CountryRepo {
       def fetchAll: F[List[Country]] =
         Logger[F].info(s"CountryRepo.fetchAll") *>
         select.query[Country].to[List].transact(xa)
+
+      def update(code: String, newName: String): F[Option[Country]] =
+        Logger[F].info(s"CountryRepo.update") *> {
+          sql"UPDATE country SET name = $newName WHERE code = $code".update.run *>
+          (select ++ sql"where code = $code").query[Country].option
+        } .transact(xa)
 
     }
 
