@@ -97,7 +97,7 @@ object Main extends IOApp {
 
   // Our entry point starts the server and blocks forever.
   def run(args: List[String]): IO[ExitCode] = {
-    implicit val log = Slf4jLogger.unsafeCreate[IO]
+    implicit val log = Slf4jLogger.getLogger[IO]
     resource[IO].use(_ => IO.never.as(ExitCode.Success))
   }
 

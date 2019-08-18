@@ -4,7 +4,7 @@
 
 package demo.repo
 
-import cats._
+import cats.effect.Sync
 import doobie._
 import io.chrisdavenport.log4cats.Logger
 
@@ -16,7 +16,7 @@ final case class MasterRepo[F[_]](
 
 object MasterRepo {
 
-  def fromTransactor[F[_]: Monad: Logger](xa: Transactor[F]): MasterRepo[F] =
+  def fromTransactor[F[_]: Sync: Logger](xa: Transactor[F]): MasterRepo[F] =
     MasterRepo(
       CityRepo.fromTransactor(xa),
       CountryRepo.fromTransactor(xa),
