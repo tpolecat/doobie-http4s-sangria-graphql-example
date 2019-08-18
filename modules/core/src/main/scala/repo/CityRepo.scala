@@ -4,7 +4,7 @@
 
 package demo.repo
 
-import cats._
+import cats.effect.Sync
 import cats.implicits._
 import doobie._
 import doobie.implicits._
@@ -18,7 +18,7 @@ trait CityRepo[F[_]] {
 
 object CityRepo {
 
-  def fromTransactor[F[_]: Monad: Logger](xa: Transactor[F]): CityRepo[F] =
+  def fromTransactor[F[_]: Sync: Logger](xa: Transactor[F]): CityRepo[F] =
     new CityRepo[F] {
 
       val select: Fragment =
