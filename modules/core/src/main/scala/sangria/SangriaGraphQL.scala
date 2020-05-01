@@ -71,7 +71,8 @@ object SangriaGraphQL {
       blockingExecutionContext: ExecutionContext
     )(
       implicit F: MonadError[F, Throwable],
-               L: LiftIO[F]
+               L: LiftIO[F],
+               C: ContextShift[IO]
     ): GraphQL[F] =
       new GraphQL[F] {
 

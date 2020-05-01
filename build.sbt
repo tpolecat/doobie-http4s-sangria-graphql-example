@@ -1,15 +1,15 @@
-lazy val catsEffectVersion    = "1.1.0"
-lazy val catsVersion          = "1.5.0"
-lazy val circeVersion         = "0.10.0"
-lazy val doobieVersion        = "0.6.0"
-lazy val fs2Version           = "1.0.2"
-lazy val kindProjectorVersion = "0.9.9"
-lazy val log4catsVersion      = "0.2.0"
-lazy val sangriaCirceVersion  = "1.2.1"
+lazy val catsEffectVersion    = "2.1.3"
+lazy val catsVersion          = "2.1.1"
+lazy val circeVersion         = "0.13.0"
+lazy val doobieVersion        = "0.9.0"
+lazy val fs2Version           = "2.3.0"
+lazy val kindProjectorVersion = "0.9.10"
+lazy val log4catsVersion      = "1.0.1"
+lazy val sangriaCirceVersion  = "1.3.0"
 lazy val sangriaVersion       = "1.4.2"
-lazy val scala12Version       = "2.12.8"
-lazy val http4sVersion        = "0.20.0-M4"
-lazy val slf4jVersion         = "1.7.25"
+lazy val scala12Version       = "2.12.11"
+lazy val http4sVersion        = "0.21.4"
+lazy val slf4jVersion         = "1.7.30"
 
 lazy val scalacSettings = Seq(
   scalacOptions ++=
@@ -18,7 +18,7 @@ lazy val scalacSettings = Seq(
       "-encoding", "utf-8",                // Specify character encoding used by source files.
       "-explaintypes",                     // Explain type errors in more detail.
       "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
-      "-language:existentials",            // Existential types (besides wildcard types) can be written and inferred
+      "-language:existentials",            // Existential types (besides wildcard types) can be written and inferreds
       "-language:higherKinds",             // Allow higher-kinded types
       "-language:implicitConversions",     // Allow definition of implicit functions called views
       "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
