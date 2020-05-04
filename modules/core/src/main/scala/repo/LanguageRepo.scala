@@ -4,8 +4,8 @@
 
 package demo.repo
 
-import cats._
 import cats.data._
+import cats.effect.Sync
 import cats.implicits._
 import doobie._
 import doobie.implicits._
@@ -19,7 +19,7 @@ trait LanguageRepo[F[_]] {
 
 object LanguageRepo {
 
-  def fromTransactor[F[_]: Monad: Logger](xa: Transactor[F]): LanguageRepo[F] =
+  def fromTransactor[F[_]: Sync: Logger](xa: Transactor[F]): LanguageRepo[F] =
     new LanguageRepo[F] {
 
       val select: Fragment =

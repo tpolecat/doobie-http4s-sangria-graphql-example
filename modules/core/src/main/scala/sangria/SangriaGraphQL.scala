@@ -13,7 +13,6 @@ import _root_.sangria.marshalling.circe._
 import _root_.sangria.parser.{ QueryParser, SyntaxError }
 import _root_.sangria.schema._
 import _root_.sangria.validation._
-import cats._
 import cats.effect._
 import cats.implicits._
 import io.circe.{ Json, JsonObject }
@@ -70,8 +69,7 @@ object SangriaGraphQL {
       userContext: F[A],
       blockingExecutionContext: ExecutionContext
     )(
-      implicit F: MonadError[F, Throwable],
-               L: LiftIO[F]
+      implicit F: Async[F],
     ): GraphQL[F] =
       new GraphQL[F] {
 
@@ -107,21 +105,22 @@ object SangriaGraphQL {
           variables:     JsonObject
         )(implicit ec: ExecutionContext): F[Either[Json, Json]] =
           userContext.flatMap { ctx =>
-            IO.fromFuture {
-              IO {
-                Executor.execute(
-                  schema           = schema,
-                  deferredResolver = deferredResolver,
-                  queryAst         = query,
-                  userContext      = ctx,
-                  variables        = Json.fromJsonObject(variables),
-                  operationName    = operationName,
-                  exceptionHandler = ExceptionHandler {
-                    case (_, e) ⇒ HandledException(e.getMessage)
-                  }
-                )
+            F.async { (cb: Either[Throwable, Json] => Unit) =>
+              Executor.execute(
+                schema           = schema,
+                deferredResolver = deferredResolver,
+                queryAst         = query,
+                userContext      = ctx,
+                variables        = Json.fromJsonObject(variables),
+                operationName    = operationName,
+                exceptionHandler = ExceptionHandler {
+                  case (_, e) ⇒ HandledException(e.getMessage)
+                }
+              ).onComplete {
+                case Success(value) => cb(Right(value))
+                case Failure(error) => cb(Left(error))
               }
-            } .to[F]
+            }
           } .attempt.flatMap {
             case Right(json)               => F.pure(json.asRight)
             case Left(err: WithViolations) => fail(formatWithViolations(err))

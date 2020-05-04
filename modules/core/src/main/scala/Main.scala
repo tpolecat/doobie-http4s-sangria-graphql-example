@@ -23,12 +23,13 @@ import org.http4s.implicits._
 import org.http4s.server.Server
 import org.http4s.server.blaze._
 import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.global
 
 object Main extends IOApp {
 
   // Construct a transactor for connecting to the database.
   def transactor[F[_]: Async: ContextShift](
-    bec: ExecutionContext
+    blocker: Blocker
   ): Resource[F, HikariTransactor[F]] =
     ExecutionContexts.fixedThreadPool[F](10).flatMap { ce =>
       HikariTransactor.newHikariTransactor(
@@ -37,7 +38,7 @@ object Main extends IOApp {
         "user",
         "password",
         ce,
-        bec
+        blocker
       )
     }
 
@@ -58,14 +59,14 @@ object Main extends IOApp {
 
   // Playground or else redirect to playground
   def playgroundOrElse[F[_]: Sync: ContextShift](
-    blockingContext: ExecutionContext
+    blocker: Blocker
   ): HttpRoutes[F] = {
     object dsl extends Http4sDsl[F]; import dsl._
     HttpRoutes.of[F] {
 
       case GET -> Root / "playground.html" =>
         StaticFile
-          .fromResource[F]("/assets/playground.html", blockingContext)
+          .fromResource[F]("/assets/playground.html", blocker)
           .getOrElseF(NotFound())
 
       case _ =>
@@ -78,7 +79,7 @@ object Main extends IOApp {
   def server[F[_]: ConcurrentEffect: ContextShift: Timer](
     routes: HttpRoutes[F]
   ): Resource[F, Server[F]] =
-    BlazeServerBuilder[F]
+    BlazeServerBuilder[F](global)
       .bindHttp(8080, "localhost")
       .withHttpApp(routes.orNotFound)
       .resource
@@ -88,16 +89,16 @@ object Main extends IOApp {
     implicit L: Logger[F]
   ): Resource[F, Server[F]] =
     for {
-      bec <- ExecutionContexts.cachedThreadPool[F]
-      xa  <- transactor[F](bec)
-      gql  = graphQL[F](xa, bec)
-      rts  = GraphQLRoutes[F](gql) <+> playgroundOrElse(bec)
+      b   <- Blocker[F]
+      xa  <- transactor[F](b)
+      gql  = graphQL[F](xa, b.blockingContext)
+      rts  = GraphQLRoutes[F](gql) <+> playgroundOrElse(b)
       svr <- server[F](rts)
     } yield svr
 
   // Our entry point starts the server and blocks forever.
   def run(args: List[String]): IO[ExitCode] = {
-    implicit val log = Slf4jLogger.unsafeCreate[IO]
+    implicit val log = Slf4jLogger.getLogger[IO]
     resource[IO].use(_ => IO.never.as(ExitCode.Success))
   }
 

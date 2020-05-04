@@ -4,8 +4,8 @@
 
 package demo.repo
 
-import cats._
 import cats.data._
+import cats.effect._
 import cats.implicits._
 import doobie._
 import doobie.implicits._
@@ -21,7 +21,7 @@ trait CountryRepo[F[_]] {
 
 object CountryRepo {
 
-  def fromTransactor[F[_]: Monad: Logger](xa: Transactor[F]): CountryRepo[F] =
+  def fromTransactor[F[_]: Sync: Logger](xa: Transactor[F]): CountryRepo[F] =
     new CountryRepo[F] {
 
       val select: Fragment =
