@@ -11,6 +11,7 @@ import doobie._
 import doobie.implicits._
 import demo.model._
 import io.chrisdavenport.log4cats.Logger
+import Fragments.in
 
 trait LanguageRepo[F[_]] {
   def fetchByCountryCode(code: String): F[List[Language]]
@@ -37,7 +38,7 @@ object LanguageRepo {
           case None      => Map.empty[String, List[Language]].pure[F]
           case Some(nel) =>
             Logger[F].info(s"LanguageRepo.fetchByCountryCodes(${codes.length} codes)") *>
-            (select ++ fr"where" ++ Fragments.in(fr"countrycode", nel))
+            (select ++ fr"where" ++ in(fr"countrycode", nel))
               .query[Language]
               .to[List]
               .map { ls =>

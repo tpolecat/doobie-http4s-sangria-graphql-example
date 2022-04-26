@@ -60,8 +60,8 @@ object WorldDeferredResolver {
           } yield ()
 
         // WARNING WARNING WARNING
-        completeCountries(select[CountryType.Deferred.ByCode]).toIO.unsafeToFuture
-        completeLanguages(select[LanguageType.Deferred.ByCountryCode]).toIO.unsafeToFuture
+        completeCountries(select[CountryType.Deferred.ByCode]).toIO.unsafeToFuture()
+        completeLanguages(select[LanguageType.Deferred.ByCountryCode]).toIO.unsafeToFuture()
         // Let's hope there are no more cases, who the hell knows. Any orphaned Promises will just
         // wait forever and eventually we'll time out. I assume.
 

@@ -109,7 +109,7 @@ object CountryType {
         Field(
           name           = "cities",
           fieldType      = ListType(CityType[F]),
-          resolve        = e => e.ctx.city.fetchByCountryCode(e.value.code).toIO.unsafeToFuture
+          resolve        = e => e.ctx.city.fetchByCountryCode(e.value.code).toIO.unsafeToFuture()
         ),
 
         Field(

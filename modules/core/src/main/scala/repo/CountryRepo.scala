@@ -9,8 +9,10 @@ import cats.effect._
 import cats.implicits._
 import doobie._
 import doobie.implicits._
+//import doobie.syntax.all
 import demo.model._
 import io.chrisdavenport.log4cats.Logger
+import Fragments.in
 
 trait CountryRepo[F[_]] {
   def fetchByCode(code: String): F[Option[Country]]
@@ -41,7 +43,7 @@ object CountryRepo {
           case None      => List.empty[Country].pure[F]
           case Some(nel) =>
             Logger[F].info(s"CountryRepo.fetchByCodes(${codes.length} codes)") *>
-            (select ++ fr"where" ++ Fragments.in(fr"code", nel)).query[Country].to[List].transact(xa)
+            (select ++ fr"where" ++ in(fr"code", nel)).query[Country].to[List].transact(xa)
         }
 
       def fetchAll: F[List[Country]] =

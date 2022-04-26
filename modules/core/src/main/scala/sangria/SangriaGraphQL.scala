@@ -114,7 +114,7 @@ object SangriaGraphQL {
                 variables        = Json.fromJsonObject(variables),
                 operationName    = operationName,
                 exceptionHandler = ExceptionHandler {
-                  case (_, e) ⇒ HandledException(e.getMessage)
+                  case (_, e) => HandledException(e.getMessage)
                 }
               ).onComplete {
                 case Success(value) => cb(Right(value))

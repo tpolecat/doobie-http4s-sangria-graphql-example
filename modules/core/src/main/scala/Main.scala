@@ -14,7 +14,6 @@ import doobie.util.ExecutionContexts
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import repo._
-import sangria._
 import _root_.sangria.schema._
 import org.http4s._
 import org.http4s.dsl._

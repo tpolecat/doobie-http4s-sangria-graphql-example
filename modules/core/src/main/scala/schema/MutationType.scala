@@ -35,7 +35,7 @@ object MutationType {
           fieldType   = OptionType(CountryType[F]),
           description = Some("Update the specified Country, if it exists."),
           arguments   = List(Code, NewName),
-          resolve     = c => c.ctx.country.update(c.arg(Code), c.arg(NewName)).toIO.unsafeToFuture
+          resolve     = c => c.ctx.country.update(c.arg(Code), c.arg(NewName)).toIO.unsafeToFuture()
         ),
 
       )
