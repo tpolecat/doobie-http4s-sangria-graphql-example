@@ -17,28 +17,13 @@ object LanguageType {
 
   def apply[F[_]]: ObjectType[MasterRepo[F], Language] =
     ObjectType(
-      name     = "Language",
-      fieldsFn = () => fields(
-
-        Field(
-          name      = "language",
-          fieldType =  StringType,
-          resolve   = _.value.language
-        ),
-
-        Field(
-          name      = "isOfficial",
-          fieldType =  BooleanType,
-          resolve   = _.value.isOfficial
-        ),
-
-        Field(
-          name      = "percentage",
-          fieldType =  FloatType,
-          resolve   = _.value.percentage.toDouble
-        ),
-
-      )
+      name = "Language",
+      fieldsFn = () =>
+        fields(
+          Field(name = "language", fieldType   = StringType, resolve  = _.value.language),
+          Field(name = "isOfficial", fieldType = BooleanType, resolve = _.value.isOfficial),
+          Field(name = "percentage", fieldType = FloatType, resolve   = _.value.percentage.toDouble)
+        )
     )
 
 }

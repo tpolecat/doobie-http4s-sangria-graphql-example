@@ -9,7 +9,7 @@ import cats.implicits._
 import doobie._
 import doobie.implicits._
 import demo.model._
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 trait CityRepo[F[_]] {
   def fetchAll(pat: Option[String]): F[List[City]]
@@ -18,22 +18,28 @@ trait CityRepo[F[_]] {
 
 object CityRepo {
 
-  def fromTransactor[F[_]: Sync: Logger](xa: Transactor[F]): CityRepo[F] =
+  def fromTransactor[F[_]: Sync](xa: Transactor[F]): CityRepo[F] =
     new CityRepo[F] {
 
-      val select: Fragment =
-        fr"""
+      val select: Fragment = fr"""
           SELECT id, name, countrycode, district, population
           FROM   city
         """
 
       def fetchAll(pat: Option[String]): F[List[City]] =
-        Logger[F].info(s"CityRepo.fetchByNamePattern($pat)") *>
-        (select ++ pat.foldMap(p => sql"WHERE name ILIKE $p")).query[City].to[List].transact(xa)
+        for {
+          logger <- Slf4jLogger.create[F]
+          result <- logger.info(s"CityRepo.fetchByNamePattern($pat)") *>
+                    (select ++ pat
+                      .foldMap(p => sql"WHERE name ILIKE $p")).query[City].to[List].transact(xa)
+        } yield result
 
       def fetchByCountryCode(code: String): F[List[City]] =
-        Logger[F].info(s"CityRepo.fetchByCountryCode($code)") *>
-        (select ++ sql"WHERE countrycode = $code").query[City].to[List].transact(xa)
+        for {
+          logger <- Slf4jLogger.create[F]
+          result <- logger.info(s"CityRepo.fetchByCountryCode($code)") *>
+                    (select ++ sql"WHERE countrycode = $code").query[City].to[List].transact(xa)
+        } yield result
 
     }
 

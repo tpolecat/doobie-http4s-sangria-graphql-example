@@ -1,18 +1,16 @@
-lazy val catsEffectVersion    = "2.5.4"
-lazy val catsVersion          = "2.6.1"
+lazy val catsEffectVersion    = "3.3.11"
+lazy val catsVersion          = "2.7.0"
 lazy val circeVersion         = "0.14.1"
-lazy val doobieVersion        = "0.13.4"
-lazy val fs2Version           = "2.5.10"
+lazy val doobieVersion        = "1.0.0-RC2"
+lazy val fs2Version           = "3.2.5"
 lazy val kindProjectorVersion = "0.13.2"
-lazy val log4catsVersion      = "1.1.1"
-lazy val sangriaCirceVersion  = "1.3.0"
-lazy val sangriaVersion       = "2.1.6"
+lazy val log4catsVersion      = "2.2.0"
+lazy val sangriaCirceVersion  = "1.3.2"
+lazy val sangriaVersion       = "3.0.0"
 lazy val scala13Version       = "2.13.8"
-lazy val http4sVersion        = "0.21.33"
-lazy val slf4jVersion         = "1.7.30"
+lazy val http4sVersion        = "0.23.11"
 
 ThisBuild / scalaVersion := scala13Version
-//ThisBuild / scalacOptions += "-P:semanticdb:synthetics:on"
 
 lazy val scalacSettings = Seq(
   scalacOptions ++=
@@ -46,13 +44,11 @@ lazy val scalacSettings = Seq(
       "-Ywarn-unused:implicits",           // Warn if an implicit parameter is unused.
       "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
       "-Ywarn-unused:locals",              // Warn if a local definition is unused.
-//      "-Ywarn-unused:params",              // Warn if a value parameter is unused.
+      "-Ywarn-unused:params",              // Warn if a value parameter is unused.
       "-Ywarn-unused:privates",            // Warn if a private member is unused.
       "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
-//      "-Ywarn-macros:before", // via som
       "-Ymacro-annotations",
-      "-Yrangepos" // for longer squiggles
-//      "-Ypartial-unification"
+      "-Yrangepos"                         // for longer squiggles
     )
   ,
   (Compile / console / scalacOptions) --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports", "-Yno-imports"),
@@ -98,7 +94,6 @@ lazy val core = project
       "org.http4s"           %% "http4s-blaze-server" % http4sVersion,
       "org.http4s"           %% "http4s-circe"        % http4sVersion,
       "io.circe"             %% "circe-optics"        % circeVersion,
-      "io.chrisdavenport"    %% "log4cats-slf4j"      % log4catsVersion,
-      "org.slf4j"            %  "slf4j-simple"        % slf4jVersion,
+      "org.typelevel"        %% "log4cats-slf4j"      % log4catsVersion
     )
   )
