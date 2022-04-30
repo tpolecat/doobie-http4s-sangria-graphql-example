@@ -5,26 +5,27 @@
 package demo.schema
 
 import cats.effect._
-import cats.effect.implicits._
+import cats.effect.Async
 import cats.implicits._
 import demo.repo._
-import sangria.execution.deferred.{ Deferred, DeferredResolver }
+import sangria.execution.deferred.Deferred
+import sangria.execution.deferred.DeferredResolver
 import scala.concurrent.ExecutionContext
 import scala.concurrent._
 import scala.reflect.ClassTag
 import scala.util.Success
+import cats.effect.unsafe.implicits.global
 
 object WorldDeferredResolver {
 
-  def apply[F[_]: Effect]: DeferredResolver[MasterRepo[F]] =
+  def apply[F[_]: Async]: DeferredResolver[MasterRepo[F]] =
     new DeferredResolver[MasterRepo[F]] {
 
       def resolve(
-        deferred:   Vector[Deferred[Any]],
-        ctx:        MasterRepo[F],
-        queryState: Any
-      )(
-        implicit ec: ExecutionContext
+        deferred:    Vector[Deferred[Any]],
+        ctx:         MasterRepo[F],
+        queryState:  Any
+      )(implicit ec: ExecutionContext
       ): Vector[Future[Any]] = {
 
         // So what we're going to do is create a map of Deferred to Promise and the complete them
@@ -38,12 +39,14 @@ object WorldDeferredResolver {
 
         // Select the distinct Deferreds of the given class. This is feckin desperate but we're
         // given Any so not a whole lot of choices.
-        def select[A <: Deferred[Any] : ClassTag]: List[A] =
-          promises.keys.collect { case a: A => a } .toList
+        def select[A <: Deferred[Any]: ClassTag]: List[A] =
+          promises.keys.collect { case a: A => a }.toList
 
         // Complete the promise associated with a Deferred
-        def complete[A](d: Deferred[A], a: A): F[Unit] =
-          Effect[F].delay(promises(d).complete(Success(a))).void
+        def complete[A](
+          d: Deferred[A],
+          a: A
+        ): F[Unit] = Sync[F].delay(promises(d).complete(Success(a))).void
 
         // Complete a bunch of countries by doing a batch database query
         def completeCountries(codes: List[CountryType.Deferred.ByCode]): F[Unit] =
@@ -56,12 +59,15 @@ object WorldDeferredResolver {
         def completeLanguages(codes: List[LanguageType.Deferred.ByCountryCode]): F[Unit] =
           for {
             m <- ctx.language.fetchByCountryCodes(codes.map(_.code))
-            _ <- m.toList.traverse { case (c, ls) => complete(LanguageType.Deferred.ByCountryCode(c), ls) }
+            _ <- m.toList.traverse { case (c, ls) =>
+                   complete(LanguageType.Deferred.ByCountryCode(c), ls)
+                 }
           } yield ()
 
         // WARNING WARNING WARNING
-        completeCountries(select[CountryType.Deferred.ByCode]).toIO.unsafeToFuture
-        completeLanguages(select[LanguageType.Deferred.ByCountryCode]).toIO.unsafeToFuture
+        (IO(completeCountries(select[CountryType.Deferred.ByCode])) >>
+        IO(completeLanguages(select[LanguageType.Deferred.ByCountryCode]))).unsafeToFuture()
+
         // Let's hope there are no more cases, who the hell knows. Any orphaned Promises will just
         // wait forever and eventually we'll time out. I assume.
 

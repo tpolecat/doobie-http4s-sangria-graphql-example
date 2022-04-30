@@ -1,6 +1,6 @@
 ## doobie-http4s-sangria-grapgql-example
 
-Example app that uses doobie, http4s, and Sangria to serve GraphQL.
+Example app that uses doobie, http4s, Cats effect 3 and Sangria to serve GraphQL.
 
 This was bootstrapped from an [example](https://github.com/OlegIlyenko/sangria-http4s-graalvm-example) by @OlegIlyenko. Thanks!
 
@@ -19,6 +19,13 @@ or if you have bloop set up you can do
     bloop run core
 
 The go to http://localhost:8080 and play around.
+For example try this query, to see a list of cities starting with "Bei":
+
+    query {
+        cities(namePattern: "Bei%") {
+            name
+        }
+    }
 
 When you're done, ^C to kill the Scala server and
 
